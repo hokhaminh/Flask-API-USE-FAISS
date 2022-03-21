@@ -1,6 +1,6 @@
 # Flask api implement universial-sentence-encoder
 
--   This project has rank first in the FPT Code Arena 2022.
+-   This project has rank second in the FPT Code Arena 2022.
 
 ## How to use
 

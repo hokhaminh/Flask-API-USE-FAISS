@@ -4,7 +4,7 @@ import pandas as pd
 import tensorflow_hub as hub
 import numpy as np
 from flask_restful import Api
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from use_4 import *
 from faiss_module import *
 from utils import *
@@ -14,15 +14,18 @@ THRESHOLD = 0.5
 
 app = Flask(__name__)
 model = USE4()
-api = Api(app)
-CORS(app)
+# api = Api(app)
+# CORS(app)
+# cors = CORS(app, resources={r"*": {"origins": "https://localhost:3000/"}})
 
+# @app.route("/")
+# def hello():
+#   return "Hello World!"
 
-@app.route("/")
-def hello():
-  return "Hello World!"
+CORS(app, support_credentials=True)
 
 @app.route("/check", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def checkQuestion():
   """
   This function is used to check whether the question is in the question bank.
@@ -46,9 +49,12 @@ def checkQuestion():
   results = questions_bank_df.iloc[I[:,0]].values.tolist()
   # if distance larger than the threshold then there is no duplicate question
   results = [results[x][0] if D[x][0] < THRESHOLD else "" for x in range(len(questions))]
+  
+
   return {"results": results}
 
 @app.route("/add/question", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def addQuestion():
   """This function is used to add a new question to the question bank."""
   questions = json.loads(request.data)
@@ -67,6 +73,11 @@ def addQuestion():
   np.save("question_bank_encoded.npy", questions_bank_embedded)
 
   return {"results": "success"}
+
+@app.after_request
+def add_security_headers(resp):
+    resp.headers['Access-control-allow-private-network']= 'true'
+    return resp
     
 if __name__ == "__main__":
-    app.run()
+    app.run(host='127.0.0.1', port=2022)
